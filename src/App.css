@@ -32,7 +32,21 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.modal-content {
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.modal-content h5 {
+  font-size: 1.1rem;
+}
+
+.modal-body {
+  background-color: cadetblue;
 }
