@@ -3,35 +3,35 @@ import { Container, Table, Button, Form, Row, Col, Modal } from "react-bootstrap
 
 function StudentResult() {
     const [students, setStudents] = useState([]);
-    const [form, setForm] = useState({ name: "", subjects: [{ subject: "", marks: "" }] });
+    const [form, setForm] = useState(
+        {
+            name: "",
+            subjects: [{ subject: "", marks: "" }]
+        }
+    );
     const [editIndex, setEditIndex] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
-    // Handle name change
-    const handleNameChange = (e) => {
+    const NameChange = (e) => {
         setForm({ ...form, name: e.target.value });
     };
 
-    // Handle individual subject change
-    const handleSubjectChange = (index, field, value) => {
+    const SubjectChange = (index, field, value) => {
         const updatedSubjects = [...form.subjects];
         updatedSubjects[index][field] = value;
         setForm({ ...form, subjects: updatedSubjects });
     };
 
-    // Add new subject row
     const addSubjectRow = () => {
         setForm({ ...form, subjects: [...form.subjects, { subject: "", marks: "" }] });
     };
 
-    // Remove subject row
     const removeSubjectRow = (index) => {
-        const updatedSubjects = form.subjects.filter((_, i) => i !== index);
+        const updatedSubjects = form.subjects.filter((item, i) => i !== index);
         setForm({ ...form, subjects: updatedSubjects });
     };
 
-    // Submit form
-    const handleSubmit = (e) => {
+    const onSubmit = (e) => {
         e.preventDefault();
         if (editIndex !== null) {
             const updated = [...students];
@@ -41,23 +41,21 @@ function StudentResult() {
         } else {
             setStudents([...students, form]);
         }
-
         setForm({ name: "", subjects: [{ subject: "", marks: "" }] });
         setShowModal(false);
     };
-
-    const handleEdit = (index) => {
+    const Edit = (index) => {
         setForm(students[index]);
         setEditIndex(index);
         setShowModal(true);
     };
 
-    const handleDelete = (index) => {
+    const Delete = (index) => {
         const filtered = students.filter((_, i) => i !== index);
         setStudents(filtered);
     };
 
-    const allSubjects = [];
+    let allSubjects = [];
     students.forEach(student => {
         student.subjects.forEach(sub => {
             if (!allSubjects.includes(sub.subject)) {
@@ -65,86 +63,88 @@ function StudentResult() {
             }
         });
     });
-
-
     return (
         <Container className="mt-5">
             <div>
                 <h2 className="text-center mb-4">Student Result</h2>
-                <Button onClick={() => {
-                    setShowModal(true);
-                    setEditIndex(null);
-                    setForm({ name: "", subjects: [{ subject: "", marks: "" }] });
-                }}>
+                <Button onClick={() =>
+                    setShowModal(true)
+                }>
                     Add Student
                 </Button>
-                {students.length > 0 && (
-                    <Table striped bordered hover responsive className="mt-5">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                {allSubjects.map((sub, i) => (
-                                    <th key={i}>{sub}</th>
-                                ))}
-                                <th>Total</th>
-                                <th>Average</th>
-                                <th>Grade</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {students.length > 0 ? (
-                                students.map((student, idx) => {
-                                    const subjectsMap = {};
-                                    student.subjects.forEach(sub => {
-                                        subjectsMap[sub.subject] = Number(sub.marks);
-                                    });
+                <Table striped bordered hover responsive className="mt-5">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            {allSubjects.map((sub, i) => (
+                                <th key={i}>{sub}</th>
+                            ))}
+                            <th>Total</th>
+                            <th>Average</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {students.length > 0 ? (
+                            students.map((student, index) => {
+                                const marksList = allSubjects.map(sub => {
+                                    const found = student.subjects.find(s => s.subject === sub);
+                                    return found ? +found.marks : "-";
+                                });
 
-                                    let allSubjects = [];
-                                    students.forEach(student => {
-                                        student.subjects.forEach(sub => {
-                                            if (!allSubjects.includes(sub.subject)) {
-                                                allSubjects.push(sub.subject);
-                                            }
-                                        });
-                                    });
+                                let total = 0, count = 0;
+                                marksList.forEach(mark => {
+                                    if (mark !== "-") {
+                                        total += mark;
+                                        count++;
+                                    }
+                                });
+                                let avg = 0;
+                                if (count > 0) {
+                                    avg = (total / count).toFixed(2);
+                                }
 
-                                    const marksList = allSubjects.map(sub => subjectsMap[sub] || "-");
-                                    const total = marksList.reduce((acc, val) => acc + (val !== "-" ? parseFloat(val) : 0), 0);
-                                    const count = marksList.filter(val => val !== "-").length;
-                                    const avg = count > 0 ? (total / count).toFixed(2) : 0;
+                                let grade = "F";
+                                if (avg >= 90) grade = "A+";
+                                else if (avg >= 80) grade = "A";
+                                else if (avg >= 70) grade = "B";
+                                else if (avg >= 60) grade = "C";
+                                else if (avg >= 50) grade = "D";
 
-                                    let grade = "F";
-                                    if (avg >= 90) grade = "A+";
-                                    else if (avg >= 80) grade = "A";
-                                    else if (avg >= 70) grade = "B";
-                                    else if (avg >= 60) grade = "C";
-                                    else if (avg >= 50) grade = "D";
+                                let status = "Pass";
+                                for (let mark of marksList) {
+                                    if (mark !== "-" && mark < 35) {
+                                        status = "Fail";
+                                        break;
+                                    }
+                                }
 
-                                    return (
-                                        <tr key={idx}>
-                                            <td>{idx + 1}</td>
-                                            <td>{student.name}</td>
-                                            {marksList.map((m, i) => (
-                                                <td key={i}>{m}</td>
-                                            ))}
-                                            <td>{total}</td>
-                                            <td>{avg}%</td>
-                                            <td>{grade}</td>
-                                            <td>
-                                                <Button variant="warning" size="sm" onClick={() => handleEdit(idx)}>Edit</Button>{" "}
-                                                <Button variant="danger" size="sm" onClick={() => handleDelete(idx)}>Delete</Button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr><td colSpan="100%" className="text-center">No students found</td></tr>
-                            )}
-                        </tbody>
-                    </Table>
-                )}
+                                return (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{student.name}</td>
+                                        {marksList.map((m, i) => (
+                                            <td key={i}>{m}</td>
+                                        ))}
+                                        <td>{total}</td>
+                                        <td>{avg}%</td>
+                                        <td>{grade}</td>
+                                        <td>{status}</td>
+                                        <td>
+                                            <Button variant="warning" size="sm" onClick={() => Edit(index)}>Edit</Button>{" "}
+                                            <Button variant="danger" size="sm" onClick={() => Delete(index)}>Delete</Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        ) : (
+                            <tr><td colSpan="100%" className="text-center">No students found</td></tr>
+                        )}
+                    </tbody>
+                </Table>
             </div>
 
             {/* Modal */}
@@ -152,14 +152,14 @@ function StudentResult() {
                 <Modal.Header closeButton>
                     <Modal.Title>{editIndex !== null ? "Edit" : "Add"} Student</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleSubmit}>
+                <Modal.Body className="py-4">
+                    <Form onSubmit={onSubmit}>
                         <Form.Group className="mb-3">
-                            <Form.Label>Student Name</Form.Label>
-                            <Form.Control type="text" value={form.name} onChange={handleNameChange} required />
+                            <h5 className="mb-3">Student Name</h5>
+                            <Form.Control type="text" value={form.name} onChange={NameChange} placeholder="Name" required />
                         </Form.Group>
 
-                        <h5>Subjects</h5>
+                        <h5 className="mb-3">Subjects</h5>
                         {form.subjects.map((item, index) => (
                             <Row key={index} className="mb-3">
                                 <Col md={5}>
@@ -167,7 +167,7 @@ function StudentResult() {
                                         type="text"
                                         placeholder="Subject"
                                         value={item.subject}
-                                        onChange={(e) => handleSubjectChange(index, "subject", e.target.value)}
+                                        onChange={(e) => SubjectChange(index, "subject", e.target.value)}
                                         required
                                     />
                                 </Col>
@@ -176,26 +176,29 @@ function StudentResult() {
                                         type="number"
                                         placeholder="Marks"
                                         value={item.marks}
-                                        onChange={(e) => handleSubjectChange(index, "marks", e.target.value)}
+                                        onChange={(e) => SubjectChange(index, "marks", e.target.value)}
                                         required
                                     />
                                 </Col>
                                 <Col md={2}>
                                     {form.subjects.length > 1 && (
-                                        <Button variant="danger" onClick={() => removeSubjectRow(index)}>-</Button>
+                                        <Button variant="danger" onClick={() => removeSubjectRow(index)}>X</Button>
                                     )}
                                 </Col>
                             </Row>
                         ))}
-                        <Button variant="secondary" onClick={addSubjectRow} className="mb-3">+ Add Subject</Button><br />
-                        <Button type="submit" variant="primary" >
-                            {editIndex !== null ? "Update" : "Add"} Student
-                        </Button>
+                        <Button variant="secondary" onClick={addSubjectRow} className="mt-2 mb-3">+ Add Subject</Button><br />
+                        <div className="text-center">
+                            <Button type="submit" variant="success">
+                                {editIndex !== null ? "Update" : "Add"} Student
+                            </Button>
+                        </div>
                     </Form>
                 </Modal.Body>
             </Modal>
-        </Container>
+        </Container >
     );
 }
 
 export default StudentResult;
+

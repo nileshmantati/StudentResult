@@ -1,13 +1,13 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import StudentResult from './StudentResult';
-import Result from './Result';
+import Homepage from './Homepage';
 
 function App() {
   return (
     <div className="App">
       {/* <StudentResult /> */}
-      <Result />
+      <Homepage />
     </div>
   );
 }
