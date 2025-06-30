@@ -11,6 +11,14 @@ const StudentTable = () => {
 
   const allSubjects = [...new Set(students.flatMap(s => s.subjects.map(sub => sub.subject)))];
 
+  const calculateTotal = (subjects) =>
+    subjects.reduce((sum, sub) => sum + Number(sub.marks), 0);
+
+  const calculateAverage = (subjects) => {
+    const total = calculateTotal(subjects);
+    const count = subjects.length;
+    return count ? parseFloat((total / count).toFixed(2)) : 0;
+  };
   return (
     <div>
       <h4 className="text-center">Student List</h4>
@@ -36,16 +44,8 @@ const StudentTable = () => {
                 const found = student.subjects.find(s => s.subject === sub);
                 return found ? +found.marks : "-";
               });
-
-              let total = 0, count = 0;
-              marksList.forEach(mark => {
-                if (mark !== "-") {
-                  total += mark;
-                  count++;
-                }
-              });
-
-              const avg = count ? (total / count).toFixed(2) : 0;
+              const total = calculateTotal(student.subjects);
+              const avg = calculateAverage(student.subjects);
 
               let grade = "F";
               if (avg >= 90) grade = "A+";
@@ -66,7 +66,7 @@ const StudentTable = () => {
                   <td>{total}</td>
                   <td>{avg}%</td>
                   <td>{grade}</td>
-                  <td>{status}</td>
+                  <td style={{ color: status === "Fail" ? "red" : "green" }}>{status}</td>
                   <td>
                     <Button variant="warning" size="sm" onClick={() => editStudent(index)}>
                       Edit

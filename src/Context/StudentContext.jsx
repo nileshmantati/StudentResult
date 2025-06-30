@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const StudentContext = createContext();
 export const useStudents = () => useContext(StudentContext);
@@ -8,6 +8,17 @@ export const StudentProvider = ({ children }) => {
   const [editIndex, setEditIndex] = useState(null);
   const [form, setForm] = useState({ name: "", subjects: [{ subject: "", marks: "" }] });
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("students");
+    if (stored) {
+      setStudents(JSON.parse(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("students", JSON.stringify(students));
+  }, [students]);
 
   const addStudent = () => {
     setStudents([...students, form]);
