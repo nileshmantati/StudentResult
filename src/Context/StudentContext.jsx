@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 
 const StudentContext = createContext();
 export const useStudents = () => useContext(StudentContext);
@@ -23,6 +24,7 @@ export const StudentProvider = ({ children }) => {
   const addStudent = () => {
     setStudents([...students, form]);
     resetForm();
+    toast.success("Student added successfully!")
   };
 
   const updateStudent = () => {
@@ -30,6 +32,7 @@ export const StudentProvider = ({ children }) => {
     updated[editIndex] = form;
     setStudents(updated);
     resetForm();
+    toast.success("Student updated successfully!");
   };
 
   const deleteStudent = (index) => {
