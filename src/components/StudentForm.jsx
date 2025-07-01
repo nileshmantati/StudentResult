@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Form, Button, Row, Col } from "react-bootstrap";
 import { useStudents } from "../Context/StudentContext";
 
@@ -12,11 +12,26 @@ const StudentForm = () => {
     editIndex,
     resetForm,
   } = useStudents();
+  const [invalid, setInValid] = useState(false);
 
   const handleChange = (i, field, value) => {
     const updated = [...form.subjects];
-    updated[i][field] = value;
-    setForm({ ...form, subjects: updated });
+    setInValid(false);
+    if (field === "subject") {
+      if (/[^a-zA-z\s]/.test(value)) {
+        setInValid(true);
+      }
+      updated[i][field] = value;
+      setForm({ ...form, subjects: updated });
+    }
+
+    if (field === "marks") {
+      if (!/[^a-zA-z\s]/.test(value)) {
+        setInValid(true);
+      }
+      updated[i][field] = value;
+      setForm({ ...form, subjects: updated });
+    }
   };
 
   const addSubject = () => {
@@ -40,7 +55,7 @@ const StudentForm = () => {
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-1">
             <Form.Label className="fw-medium">Student Name</Form.Label>
             <Form.Control
               type="text"
@@ -50,6 +65,7 @@ const StudentForm = () => {
               required
             />
           </Form.Group>
+          {/* {inValid && <p className="text-danger">*Name must be String</p>} */}
           <div className="d-flex column-gap-3">
             <Col md={5}>
               <Form.Label className="fw-medium">Subjects</Form.Label>
@@ -68,6 +84,7 @@ const StudentForm = () => {
                   onChange={(e) => handleChange(i, "subject", e.target.value)}
                   required
                 />
+                {invalid && (<p className="text-danger">*Subject must be String</p>)}
               </Col>
               <Col md={5}>
                 <Form.Control
@@ -77,6 +94,7 @@ const StudentForm = () => {
                   onChange={(e) => handleChange(i, "marks", e.target.value)}
                   required
                 />
+                {invalid && (<p className="text-danger">*Marks must be String</p>)}
               </Col>
               <Col md={2} className="d-flex align-items-end justify-content-start">
                 {form.subjects.length > 1 && (

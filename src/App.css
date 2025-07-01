@@ -47,6 +47,6 @@
   font-size: 1.1rem;
 }
 
-.modal-body {
-  background-color: cadetblue;
+.modal-body p {
+  font-size: .8rem;
 }
