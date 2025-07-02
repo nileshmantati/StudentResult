@@ -17,6 +17,7 @@ const StudentForm = () => {
   const [invalid, setInValid] = useState([]);
   const [nameError, setNameError] = useState("");
 
+  // Name Function 
   const handleName = (value) => {
     if (/\d/.test(value)) {
       setNameError("*Name should not contain numbers");
@@ -27,29 +28,8 @@ const StudentForm = () => {
       setForm({ ...form, name: value })
     }
   }
-  // const handleChange = (i, field, value) => {
-  //   const updated = [...form.subjects];
-  //   setInValid(false);
-  //   if (field === "subject") {
-  //     if (/[^a-zA-z\s]/.test(value)) {
-  //       toast.warn("Subject should contain only letters!");
-  //       setInValid(true);
-  //       return;
-  //     }
-  //     updated[i][field] = value;
-  //     setForm({ ...form, subjects: updated });
-  //   }
 
-  //   if (field === "marks") {
-  //     if (isNaN(value)) {
-  //       toast.warn("Marks should be a number!");
-  //       setInValid(true);
-  //       return;
-  //     }
-  //     updated[i][field] = value;
-  //     setForm({ ...form, subjects: updated });
-  //   }
-  // };
+  // Subjects and Marks Function
   const handleChange = (i, field, value) => {
     const updated = [...form.subjects];
     const updatedinvalid = [...invalid];
@@ -65,6 +45,8 @@ const StudentForm = () => {
     }
     if (field === "marks") {
       updated[i][field] = value;
+
+      // Here Check Value is Number or not
       if (/^\d{1,3}$/.test(value)) {
         const num = Number(value);
         if (num >= 0 && num <= 100) {
@@ -82,16 +64,16 @@ const StudentForm = () => {
     setInValid(updatedinvalid);
   };
 
-
+  // Add and Remove Subject Function
   const addSubject = () => {
     setForm({ ...form, subjects: [...form.subjects, { subject: "", marks: "" }] });
   };
-
   const removeSubject = (i) => {
     const updated = form.subjects.filter((_, idx) => idx !== i);
     setForm({ ...form, subjects: updated });
   };
 
+  // Form Submit Function
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
@@ -102,6 +84,8 @@ const StudentForm = () => {
       toast.error("Name should not contain numbers!");
       return;
     }
+
+    // Here Check Value is empty or NotaNumber or not integer or below of 0 or above of 100
     const invalidMarks = form.subjects.some(sub => {
       const num = Number(sub.marks);
       return sub.marks === "" || isNaN(num) || !Number.isInteger(num) || num < 0 || num > 100;
@@ -132,7 +116,7 @@ const StudentForm = () => {
           </Form.Group>
           {/* {inValid && <p className="text-danger">*Name must be String</p>} */}
           {nameError && <p className="text-danger">{nameError}</p>}
-          <div className="d-flex column-gap-3">
+          <div className="d-flex column-gap-3 mt-3">
             <Col md={5}>
               <Form.Label className="fw-medium">Subjects</Form.Label>
             </Col>
@@ -148,6 +132,7 @@ const StudentForm = () => {
                   placeholder="Subject"
                   value={item.subject}
                   onChange={(e) => handleChange(i, "subject", e.target.value)}
+                  className="mb-1"
                   required
                 />
                 {/* {invalid && (<p className="text-danger">*Subject must be String</p>)} */}
@@ -162,6 +147,7 @@ const StudentForm = () => {
                   placeholder="Marks"
                   value={item.marks}
                   onChange={(e) => handleChange(i, "marks", e.target.value)}
+                  className="mb-1"
                   // onKeyDown={(e) => {
                   //   // Block 'e', 'E', '.', '+', and '-' keys
                   //   if (["e", "E", ".", "+", "-"].includes(e.key)) {
