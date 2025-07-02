@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Form, Button, Row, Col } from "react-bootstrap";
+import { toast } from 'react-toastify';
 import { useStudents } from "../Context/StudentContext";
 
 const StudentForm = () => {
@@ -12,27 +13,75 @@ const StudentForm = () => {
     editIndex,
     resetForm,
   } = useStudents();
-  const [invalid, setInValid] = useState(false);
+  // const [invalid, setInValid] = useState(false);
+  const [invalid, setInValid] = useState([]);
+  const [nameError, setNameError] = useState("");
 
+  const handleName = (value) => {
+    if (/\d/.test(value)) {
+      setNameError("*Name should not contain numbers");
+      toast.error("Name should not contain numbers!");
+    }
+    else {
+      setNameError("");
+      setForm({ ...form, name: value })
+    }
+  }
+  // const handleChange = (i, field, value) => {
+  //   const updated = [...form.subjects];
+  //   setInValid(false);
+  //   if (field === "subject") {
+  //     if (/[^a-zA-z\s]/.test(value)) {
+  //       toast.warn("Subject should contain only letters!");
+  //       setInValid(true);
+  //       return;
+  //     }
+  //     updated[i][field] = value;
+  //     setForm({ ...form, subjects: updated });
+  //   }
+
+  //   if (field === "marks") {
+  //     if (isNaN(value)) {
+  //       toast.warn("Marks should be a number!");
+  //       setInValid(true);
+  //       return;
+  //     }
+  //     updated[i][field] = value;
+  //     setForm({ ...form, subjects: updated });
+  //   }
+  // };
   const handleChange = (i, field, value) => {
     const updated = [...form.subjects];
-    setInValid(false);
+    const updatedinvalid = [...invalid];
+    if (!updatedinvalid[i]) updatedinvalid[i] = { subject: "", marks: "" };
     if (field === "subject") {
-      if (/[^a-zA-z\s]/.test(value)) {
-        setInValid(true);
+      if (/[^a-zA-Z\s]/.test(value)) {
+        updatedinvalid[i].subject = "*Subject should contain only letters";
+        toast.error("Subject should contain only letters!");
+      } else {
+        updatedinvalid[i].subject = "";
+        updated[i][field] = value;
       }
-      updated[i][field] = value;
-      setForm({ ...form, subjects: updated });
     }
-
     if (field === "marks") {
-      if (!/[^a-zA-z\s]/.test(value)) {
-        setInValid(true);
-      }
       updated[i][field] = value;
-      setForm({ ...form, subjects: updated });
+      if (/^\d{1,3}$/.test(value)) {
+        const num = Number(value);
+        if (num >= 0 && num <= 100) {
+          updatedinvalid[i].marks = "";
+        } else {
+          updatedinvalid[i].marks = "*Marks must be between 0 and 100";
+        }
+      } else if (value === "") {
+        updatedinvalid[i].marks = "";
+      } else {
+        updatedinvalid[i].marks = "*Marks must be a valid number";
+      }
     }
+    setForm({ ...form, subjects: updated });
+    setInValid(updatedinvalid);
   };
+
 
   const addSubject = () => {
     setForm({ ...form, subjects: [...form.subjects, { subject: "", marks: "" }] });
@@ -45,6 +94,22 @@ const StudentForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.name.trim()) {
+      toast.error("Name is required!");
+      return;
+    }
+    if (/\d/.test(form.name)) {
+      toast.error("Name should not contain numbers!");
+      return;
+    }
+    const invalidMarks = form.subjects.some(sub => {
+      const num = Number(sub.marks);
+      return sub.marks === "" || isNaN(num) || !Number.isInteger(num) || num < 0 || num > 100;
+    });
+    if (invalidMarks) {
+      toast.error("Marks should be numeric.");
+      return;
+    }
     editIndex !== null ? updateStudent() : addStudent();
   };
 
@@ -61,11 +126,12 @@ const StudentForm = () => {
               type="text"
               placeholder="Name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => handleName(e.target.value)}
               required
             />
           </Form.Group>
           {/* {inValid && <p className="text-danger">*Name must be String</p>} */}
+          {nameError && <p className="text-danger">{nameError}</p>}
           <div className="d-flex column-gap-3">
             <Col md={5}>
               <Form.Label className="fw-medium">Subjects</Form.Label>
@@ -84,17 +150,28 @@ const StudentForm = () => {
                   onChange={(e) => handleChange(i, "subject", e.target.value)}
                   required
                 />
-                {invalid && (<p className="text-danger">*Subject must be String</p>)}
+                {/* {invalid && (<p className="text-danger">*Subject must be String</p>)} */}
+                {invalid[i]?.subject && <p className="text-danger">{invalid[i].subject}</p>}
               </Col>
               <Col md={5}>
                 <Form.Control
-                  type="number"
+                  type="text"
+                  // min="0"
+                  // max="100"
+                  // step="1"
                   placeholder="Marks"
                   value={item.marks}
                   onChange={(e) => handleChange(i, "marks", e.target.value)}
+                  // onKeyDown={(e) => {
+                  //   // Block 'e', 'E', '.', '+', and '-' keys
+                  //   if (["e", "E", ".", "+", "-"].includes(e.key)) {
+                  //     e.preventDefault();
+                  //   }
+                  // }}
                   required
                 />
-                {invalid && (<p className="text-danger">*Marks must be String</p>)}
+                {/* {invalid && (<p className="text-danger">*Marks must be String</p>)} */}
+                {invalid[i]?.marks && <p className="text-danger">{invalid[i].marks}</p>}
               </Col>
               <Col md={2} className="d-flex align-items-end justify-content-start">
                 {form.subjects.length > 1 && (
